@@ -60,17 +60,20 @@ const userSchema = new mongoose.Schema({
   },
 });
 
+//Pre-save Middleware: Used to modify or validate data before saving to the database (e.g., hashing passwords).
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) {
-    next();
+    next();// If the password is not modified, continue to the next middleware.
   }
-  this.password = await bcrypt.hash(this.password, 10);
+  this.password = await bcrypt.hash(this.password, 10);// Hash the password before saving.
 });
 
 userSchema.methods.comparePassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
+//at the time of login user
+//When a user logs in, this method generates a JWT token that can be used to authenticate future requests.
 userSchema.methods.generateJsonWebToken = function () {
   return jwt.sign({ id: this._id }, process.env.JWT_SECRET_KEY, {
     expiresIn: process.env.JWT_EXPIRES,
